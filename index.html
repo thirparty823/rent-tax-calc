@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>租賃稅務試算器</title>
+  <style>
+    :root { --border:#ddd; --muted:#666; --bg:#fafafa; }
+    body{font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;max-width:980px;margin:24px auto;padding:0 16px;line-height:1.5;color:#111}
+    h1{margin:0 0 4px;font-size:26px}
+    h2{margin:0 0 8px;font-size:18px}
+    .muted{color:var(--muted);font-size:13px}
+    .brandbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+    .brandleft{display:flex;align-items:center;gap:10px}
+    .brandlogo{width:40px;height:40px;object-fit:contain;border:1px solid var(--border);border-radius:8px;display:none;background:#fff}
+    .card{border:1px solid var(--border);border-radius:12px;padding:16px;margin:14px 0;background:white}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+    label{display:block;font-weight:600;font-size:14px;margin-bottom:4px}
+    input,select,button{width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;font-size:14px;box-sizing:border-box}
+    button{cursor:pointer;background:#111;color:#fff;border-color:#111}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .actions button,.actions a{width:auto}
+    .secondary{background:#fff;color:#111}
+    .result-row{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed #eee}
+    .result-row:last-child{border-bottom:none}
+    .out{font-weight:700}
+    details{margin-top:8px}
+    summary{cursor:pointer;color:#333}
+    ul{margin:8px 0 0 18px;padding:0}
+    .footer{margin:20px 0;color:var(--muted);font-size:12px}
+    .pill{display:inline-block;border:1px solid var(--border);background:var(--bg);padding:2px 8px;border-radius:999px;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="brandbar">
+    <div class="brandleft">
+      <img id="brandLogo" class="brandlogo" alt="logo" />
+      <div>
+        <h1 id="brandTitle">租賃稅務試算器</h1>
+        <div class="muted">試算用（非核定）｜支援品牌切換：?brand=company / ?brand=mao</div>
+      </div>
+    </div>
+    <div><a id="brandPrimaryLink" href="#" target="_blank" rel="noreferrer"></a></div>
+  </div>
+
+  <div class="card">
+    <h2>輸入</h2>
+    <div class="grid">
+      <div>
+        <label for="scheme">出租方案</label>
+        <select id="scheme"></select>
+      </div>
+      <div>
+        <label for="monthlyRent">每月租金（元）</label>
+        <input id="monthlyRent" type="number" min="0" step="1" placeholder="例如 25000" />
+      </div>
+      <div>
+        <label for="tenantType">承租人身分</label>
+        <select id="tenantType">
+          <option value="person">自然人</option>
+          <option value="corp">法人／公司／機關</option>
+        </select>
+      </div>
+      <div>
+        <label for="resident">所得人身分（屋主）</label>
+        <select id="resident">
+          <option value="yes">居住者（扣繳10%）</option>
+          <option value="no">非居住者（扣繳20%）</option>
+        </select>
+      </div>
+      <div>
+        <label for="marginalRate">個人邊際稅率（估算）</label>
+        <select id="marginalRate">
+          <option value="5">5%</option>
+          <option value="12">12%</option>
+          <option value="20">20%</option>
+          <option value="30">30%</option>
+          <option value="40">40%</option>
+        </select>
+      </div>
+    </div>
+
+    <details>
+      <summary>進階設定（1.0 可先用預設）</summary>
+      <div class="grid" style="margin-top:8px;">
+        <div>
+          <label><input id="enableNhiThreshold" type="checkbox" checked style="width:auto; margin-right:6px;">套用二代健保門檻（單次給付未達 20,000 不計）</label>
+        </div>
+        <div>
+          <label><input id="assumePersonWithholding" type="checkbox" style="width:auto; margin-right:6px;">自然人承租也視為扣繳/扣費義務人（公司口徑開關）</label>
+        </div>
+      </div>
+      <div class="muted">提醒：二代健保扣取與扣費義務人細節，請依健保署最新規定／公司口徑確認。</div>
+    </details>
+
+    <div class="actions">
+      <button id="calcBtn">計算</button>
+      <button id="copyBtn" class="secondary" type="button">複製結果文字（給 LINE）</button>
+      <button id="reportBtn" class="secondary" type="button">產出列印報告頁</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>結果 <span class="pill">1.0</span></h2>
+    <div class="result-row"><div>租金扣繳稅額（WHT）</div><div class="out" id="outWht">—</div></div>
+    <div class="result-row"><div>二代健保補充保費（NHI）</div><div class="out" id="outNhi">—</div></div>
+    <div class="result-row"><div>估算年度租賃所得（申報用）</div><div class="out" id="outRentIncome">—</div></div>
+    <div class="result-row"><div>估算年度所得稅（租賃所得 × 邊際稅率）</div><div class="out" id="outEstTax">—</div></div>
+    <div class="muted" id="outAssumption" style="margin-top:10px;">—</div>
+  </div>
+
+  <div class="card">
+    <h2>法源與來源（本次方案）</h2>
+    <ul id="sources"></ul>
+  </div>
+
+  <div class="footer" id="footerDisclaimer">本工具為試算與法源指引，非稅捐機關核定；實際仍以個案資料、法規與主管機關認定為準。</div>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

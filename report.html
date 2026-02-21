@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>租賃稅務試算報告</title>
+  <style>
+    body{font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;max-width:900px;margin:24px auto;padding:0 16px;line-height:1.5;color:#111}
+    .header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+    .card{border:1px solid #ddd;border-radius:10px;padding:14px;margin:12px 0}
+    .row{display:flex;justify-content:space-between;border-bottom:1px dashed #eee;padding:6px 0;gap:10px}
+    .row:last-child{border-bottom:none}
+    .muted{color:#666;font-size:12px}
+    .watermark{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.06;font-size:56px;font-weight:700;transform:rotate(-20deg)}
+    .printbar{margin:12px 0}
+    @media print { .printbar{display:none} }
+  </style>
+</head>
+<body>
+  <div class="watermark" id="wm"></div>
+  <div class="printbar"><button onclick="window.print()">列印 / 存成 PDF</button></div>
+  <div class="header">
+    <div>
+      <h1 id="title" style="margin:0 0 4px;font-size:24px;">租賃稅務試算報告</h1>
+      <div class="muted" id="brandName"></div>
+    </div>
+    <div class="muted" id="dt"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">輸入摘要</h3>
+    <div class="row"><div>出租方案</div><div id="in_scheme">—</div></div>
+    <div class="row"><div>每月租金</div><div id="in_rent">—</div></div>
+    <div class="row"><div>承租人</div><div id="in_tenant">—</div></div>
+    <div class="row"><div>屋主身分</div><div id="in_resident">—</div></div>
+    <div class="row"><div>邊際稅率（估算）</div><div id="in_mtr">—</div></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">試算結果</h3>
+    <div class="row"><div>租金扣繳稅額（WHT）</div><div id="r_wht">—</div></div>
+    <div class="row"><div>二代健保補充保費（NHI）</div><div id="r_nhi">—</div></div>
+    <div class="row"><div>估算年度租賃所得</div><div id="r_income">—</div></div>
+    <div class="row"><div>估算年度所得稅</div><div id="r_tax">—</div></div>
+    <div class="muted" id="assume" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">法源與來源</h3>
+    <ul id="sources"></ul>
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">聲明</h3>
+    <div class="muted" id="disc"></div>
+  </div>
+
+<script type="module">
+  import { SCHEMES, TAX_CONSTANTS } from './rules.js';
+  const money = n => new Intl.NumberFormat('zh-TW', {maximumFractionDigits:0}).format(Math.round(n||0));
+  const q = s => document.querySelector(s);
+  const u = new URL(window.location.href);
+  const p = k => u.searchParams.get(k);
+  const scheme = SCHEMES.find(s => s.code === p('scheme')) || SCHEMES[0];
+
+  const cfg = await (await fetch('./brand.config.json')).json();
+  const brandKey = cfg.brands[p('brand')] ? p('brand') : cfg.defaultBrand;
+  const brand = cfg.brands[brandKey];
+
+  const rent = Number(p('rent') || 0);
+  const tenant = p('tenant') || 'person';
+  const resident = (p('resident') || 'yes') === 'yes';
+  const mtr = Number(p('mtr') || 5);
+  const useThreshold = (p('nhiThreshold') || '1') === '1';
+  const personWithholding = (p('personWithholding') || '0') === '1';
+
+  function shouldWithhold(){ return tenant === 'corp' || personWithholding; }
+  const whtRate = resident ? TAX_CONSTANTS.WHT_RESIDENT : TAX_CONSTANTS.WHT_NON_RESIDENT;
+  const wht = shouldWithhold() ? rent*whtRate : 0;
+  let nhi = 0;
+  if (shouldWithhold()) {
+    if (!useThreshold || rent >= TAX_CONSTANTS.NHI_THRESHOLD) nhi = rent * TAX_CONSTANTS.NHI_RATE;
+  }
+
+  let annualIncome = 0;
+  let note = '';
+  if (scheme.expense_mode === 'standard') {
+    const taxable = Math.max(0, rent*12 - (scheme.rent_exempt_per_month||0)*12);
+    annualIncome = taxable - taxable*(scheme.expense_rate||0);
+    note = `每月免稅額 ${money(scheme.rent_exempt_per_month||0)}；費用率 ${(scheme.expense_rate*100).toFixed(0)}%`;
+  } else {
+    const partA = Math.min(Math.max(rent-6000,0),14000);
+    const partB = Math.max(rent-20000,0);
+    const incomeM = Math.max(rent-6000,0) - (partA*0.53 + partB*0.43);
+    annualIncome = incomeM*12;
+    note = '租賃條例§17 試算：每月6,000免稅；6,000~20,000費用率53%；超過20,000部分先以43%試算（1.0）';
+  }
+  const estTax = annualIncome * (mtr/100);
+
+  q('#title').textContent = '租賃稅務試算報告';
+  q('#brandName').textContent = brand.displayName;
+  q('#wm').textContent = brand.reportWatermarkText || brand.displayName;
+  q('#dt').textContent = new Date().toLocaleString('zh-TW');
+
+  q('#in_scheme').textContent = scheme.name;
+  q('#in_rent').textContent = money(rent) + ' 元';
+  q('#in_tenant').textContent = tenant === 'corp' ? '法人／公司／機關' : '自然人';
+  q('#in_resident').textContent = resident ? '居住者' : '非居住者';
+  q('#in_mtr').textContent = mtr + '%';
+
+  q('#r_wht').textContent = shouldWithhold() ? `${money(wht)} 元（${(whtRate*100).toFixed(0)}%）` : '0 元（自然人承租預設不扣）';
+  q('#r_nhi').textContent = shouldWithhold() ? (nhi ? `${money(nhi)} 元（2.11%）` : '0 元（未達門檻）') : '0 元（自然人承租預設不扣）';
+  q('#r_income').textContent = money(annualIncome) + ' 元';
+  q('#r_tax').textContent = money(estTax) + ' 元';
+  q('#assume').textContent = `方案前提：${scheme.shortCondition}｜${note}`;
+
+  const ul = q('#sources');
+  scheme.sources.forEach(s => {
+    const li = document.createElement('li');
+    const a = document.createElement('a');
+    a.href=s.url; a.target='_blank'; a.rel='noreferrer'; a.textContent=s.label;
+    li.appendChild(a); ul.appendChild(li);
+  });
+
+  q('#disc').textContent = brand.footerDisclaimer;
+</script>
+</body>
+</html>
