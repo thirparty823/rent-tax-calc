@@ -12,13 +12,13 @@
       "footerDisclaimer": "本工具為試算與法源指引，非稅捐機關核定；實際仍以個案資料、法規與主管機關認定為準。"
     },
     "mao": {
-      "displayName": "大毛版｜租賃稅務試算器",
+      "displayName": "｜租賃稅務試算器",
       "logoUrl": "",
       "primaryLinkLabel": "LINE 聯絡",
-      "primaryLinkUrl": "https://line.me/",
-      "contactLabel": "聯絡大毛",
-      "contactUrl": "https://line.me/",
-      "reportWatermarkText": "大毛｜試算",
+      "primaryLinkUrl": "https://line.me/ti/p/KC2BgchjuJ",
+      "contactLabel": "聯絡我",
+      "contactUrl": "https://line.me/ti/p/KC2BgchjuJ",
+      "reportWatermarkText": "｜試算",
       "footerDisclaimer": "本工具為試算與法源指引，非稅捐機關核定；實際仍以個案資料、法規與主管機關認定為準。"
     }
   }
