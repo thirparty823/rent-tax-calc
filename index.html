@@ -49,6 +49,7 @@
       <div>
         <label for="scheme">出租方案</label>
         <select id="scheme"></select>
+        <div class="muted">承租人選「法人」時，社宅／公益出租人將自動鎖定。</div>
       </div>
       <div>
         <label for="monthlyRent">每月租金（元）</label>
@@ -80,18 +81,7 @@
       </div>
     </div>
 
-    <details>
-      <summary>進階設定（1.0 可先用預設）</summary>
-      <div class="grid" style="margin-top:8px;">
-        <div>
-          <label><input id="enableNhiThreshold" type="checkbox" checked style="width:auto; margin-right:6px;">套用二代健保門檻（單次給付未達 20,000 不計）</label>
-        </div>
-        <div>
-          <label><input id="assumePersonWithholding" type="checkbox" style="width:auto; margin-right:6px;">自然人承租也視為扣繳/扣費義務人（公司口徑開關）</label>
-        </div>
-      </div>
-      <div class="muted">提醒：二代健保扣取與扣費義務人細節，請依健保署最新規定／公司口徑確認。</div>
-    </details>
+    <div class="muted" style="margin-top:8px;">目前試算口徑（依你的需求調整）：僅在「法人承租」且「單筆月租 ≥ 20,000」時計算扣繳與二代健保。</div>
 
     <div class="actions">
       <button id="calcBtn">計算</button>
@@ -101,9 +91,10 @@
   </div>
 
   <div class="card">
-    <h2>結果 <span class="pill">1.0</span></h2>
+    <h2>結果 <span class="pill">1.2</span></h2>
     <div class="result-row"><div>租金扣繳稅額（WHT）</div><div class="out" id="outWht">—</div></div>
     <div class="result-row"><div>二代健保補充保費（NHI）</div><div class="out" id="outNhi">—</div></div>
+    <div class="result-row"><div>實收月租金（試算）</div><div class="out" id="outNetRent">—</div></div>
     <div class="result-row"><div>估算年度租賃所得（申報用）</div><div class="out" id="outRentIncome">—</div></div>
     <div class="result-row"><div>估算年度所得稅（租賃所得 × 邊際稅率）</div><div class="out" id="outEstTax">—</div></div>
     <div class="muted" id="outAssumption" style="margin-top:10px;">—</div>
@@ -114,8 +105,8 @@
     <ul id="sources"></ul>
   </div>
 
-  <div class="footer" id="footerDisclaimer">本工具為試算與法源指引，非稅捐機關核定；實際仍以個案資料、法規與主管機關認定為準。</div>
+  <div class="footer"><div id="footerVersion"></div><div id="footerDisclaimer">本工具為試算與法源指引，非稅捐機關核定；實際仍以個案資料、法規與主管機關認定為準。</div></div>
 
-  <script type="module" src="./app.js"></script>
+<script type="module" src="./app.js"></script>
 </body>
 </html>

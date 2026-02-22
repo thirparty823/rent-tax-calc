@@ -20,9 +20,13 @@
   <div class="watermark" id="wm"></div>
   <div class="printbar"><button onclick="window.print()">列印 / 存成 PDF</button></div>
   <div class="header">
-    <div>
-      <h1 id="title" style="margin:0 0 4px;font-size:24px;">租賃稅務試算報告</h1>
-      <div class="muted" id="brandName"></div>
+    <div style="display:flex;gap:10px;align-items:flex-start;">
+      <img id="logo" alt="logo" style="width:42px;height:42px;object-fit:contain;border:1px solid #ddd;border-radius:8px;display:none;" />
+      <div>
+        <h1 id="title" style="margin:0 0 4px;font-size:24px;">租賃稅務試算報告</h1>
+        <div class="muted" id="brandName"></div>
+        <div class="muted" id="ver"></div>
+      </div>
     </div>
     <div class="muted" id="dt"></div>
   </div>
@@ -40,6 +44,7 @@
     <h3 style="margin:0 0 8px;">試算結果</h3>
     <div class="row"><div>租金扣繳稅額（WHT）</div><div id="r_wht">—</div></div>
     <div class="row"><div>二代健保補充保費（NHI）</div><div id="r_nhi">—</div></div>
+    <div class="row"><div>實收月租金（試算）</div><div id="r_net">—</div></div>
     <div class="row"><div>估算年度租賃所得</div><div id="r_income">—</div></div>
     <div class="row"><div>估算年度所得稅</div><div id="r_tax">—</div></div>
     <div class="muted" id="assume" style="margin-top:8px;"></div>
@@ -57,6 +62,7 @@
 
 <script type="module">
   import { SCHEMES, TAX_CONSTANTS } from './rules.js';
+  const APP_META = { version: 'v1.2', updatedAt: '2026-02-21' };
   const money = n => new Intl.NumberFormat('zh-TW', {maximumFractionDigits:0}).format(Math.round(n||0));
   const q = s => document.querySelector(s);
   const u = new URL(window.location.href);
@@ -71,23 +77,19 @@
   const tenant = p('tenant') || 'person';
   const resident = (p('resident') || 'yes') === 'yes';
   const mtr = Number(p('mtr') || 5);
-  const useThreshold = (p('nhiThreshold') || '1') === '1';
-  const personWithholding = (p('personWithholding') || '0') === '1';
 
-  function shouldWithhold(){ return tenant === 'corp' || personWithholding; }
+  const shouldWithhold = tenant === 'corp' && rent >= TAX_CONSTANTS.PRACTICE_THRESHOLD;
   const whtRate = resident ? TAX_CONSTANTS.WHT_RESIDENT : TAX_CONSTANTS.WHT_NON_RESIDENT;
-  const wht = shouldWithhold() ? rent*whtRate : 0;
-  let nhi = 0;
-  if (shouldWithhold()) {
-    if (!useThreshold || rent >= TAX_CONSTANTS.NHI_THRESHOLD) nhi = rent * TAX_CONSTANTS.NHI_RATE;
-  }
+  const wht = shouldWithhold ? rent*whtRate : 0;
+  const nhi = shouldWithhold ? rent*TAX_CONSTANTS.NHI_RATE : 0;
+  const netRent = Math.max(0, rent - wht - nhi);
 
   let annualIncome = 0;
   let note = '';
   if (scheme.expense_mode === 'standard') {
     const taxable = Math.max(0, rent*12 - (scheme.rent_exempt_per_month||0)*12);
     annualIncome = taxable - taxable*(scheme.expense_rate||0);
-    note = `每月免稅額 ${money(scheme.rent_exempt_per_month||0)}；費用率 ${(scheme.expense_rate*100).toFixed(0)}%`;
+    note = `每月免稅額 ${money(scheme.rent_exempt_per_month||0)}；費用率 ${((scheme.expense_rate||0)*100).toFixed(0)}%`;
   } else {
     const partA = Math.min(Math.max(rent-6000,0),14000);
     const partB = Math.max(rent-20000,0);
@@ -99,6 +101,8 @@
 
   q('#title').textContent = '租賃稅務試算報告';
   q('#brandName').textContent = brand.displayName;
+  q('#ver').textContent = `版本 ${APP_META.version}｜更新日期 ${APP_META.updatedAt}`;
+  if (brand.logoUrl) { const lg=q('#logo'); lg.src=brand.logoUrl; lg.style.display='block'; }
   q('#wm').textContent = brand.reportWatermarkText || brand.displayName;
   q('#dt').textContent = new Date().toLocaleString('zh-TW');
 
@@ -108,8 +112,9 @@
   q('#in_resident').textContent = resident ? '居住者' : '非居住者';
   q('#in_mtr').textContent = mtr + '%';
 
-  q('#r_wht').textContent = shouldWithhold() ? `${money(wht)} 元（${(whtRate*100).toFixed(0)}%）` : '0 元（自然人承租預設不扣）';
-  q('#r_nhi').textContent = shouldWithhold() ? (nhi ? `${money(nhi)} 元（2.11%）` : '0 元（未達門檻）') : '0 元（自然人承租預設不扣）';
+  q('#r_wht').textContent = shouldWithhold ? `${money(wht)} 元（${(whtRate*100).toFixed(0)}%）` : '0 元（實務口徑：未達20,000或非法人承租）';
+  q('#r_nhi').textContent = shouldWithhold ? `${money(nhi)} 元（2.11%）` : '0 元（實務口徑：未達20,000或非法人承租）';
+  q('#r_net').textContent = money(netRent) + ' 元';
   q('#r_income').textContent = money(annualIncome) + ' 元';
   q('#r_tax').textContent = money(estTax) + ' 元';
   q('#assume').textContent = `方案前提：${scheme.shortCondition}｜${note}`;
