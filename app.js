@@ -132,9 +132,14 @@ function calcEstimatedTax(rentIncomeAnnual, marginalRatePct){
 function renderSources(scheme){
   const ul = qs('#sources');
   ul.innerHTML = '';
-  scheme.sources.forEach(s => {
+  const fixedSources = [
+    '住宅法第15條',
+    '住宅法第23條',
+    '租賃住宅市場發展及管理條例第17條'
+  ];
+  fixedSources.forEach(label => {
     const li = document.createElement('li');
-    li.textContent = s.label;
+    li.textContent = label;
     ul.appendChild(li);
   });
 }
