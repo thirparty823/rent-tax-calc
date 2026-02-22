@@ -2,9 +2,9 @@
 // 注意：這不是安全防護，程式碼與密碼仍可被看到；僅作最低門檻限制。
 (() => {
   const AUTH_KEY = 'rentTaxCalcAuth_v1';
-  const PASSWORD = '1234'; // ← 請改成你自己的密碼（上線前務必修改）
+  const PASSWORD = '1234'; // 
   const TITLE = '租賃稅務試算器';
-  const SUBTITLE = '請輸入存取密碼（最低保護）';
+  const SUBTITLE = '請輸入存取密碼';
 
   function isAuthed() {
     try { return sessionStorage.getItem(AUTH_KEY) === 'ok'; } catch { return false; }
@@ -39,8 +39,6 @@
           <button id="authPwdBtn" type="button">進入</button>
         </div>
         <div class="auth-err" id="authPwdErr"></div>
-        <div class="auth-note">此為弱保護：可限制一般使用者直接開啟，但無法防止懂技術者查看程式碼。</div>
-      </div>`;
     document.body.appendChild(mask);
 
     const input = mask.querySelector('#authPwdInput');
