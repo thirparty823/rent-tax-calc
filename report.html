@@ -15,6 +15,7 @@
     .printbar{margin:12px 0}
     @media print { .printbar{display:none} }
   </style>
+  <script src="./auth.js"></script>
 </head>
 <body>
   <div class="watermark" id="wm"></div>
@@ -122,9 +123,8 @@
   const ul = q('#sources');
   scheme.sources.forEach(s => {
     const li = document.createElement('li');
-    const a = document.createElement('a');
-    a.href=s.url; a.target='_blank'; a.rel='noreferrer'; a.textContent=s.label;
-    li.appendChild(a); ul.appendChild(li);
+    li.textContent = s.label;
+    ul.appendChild(li);
   });
 
   q('#disc').textContent = brand.footerDisclaimer;

@@ -134,9 +134,7 @@ function renderSources(scheme){
   ul.innerHTML = '';
   scheme.sources.forEach(s => {
     const li = document.createElement('li');
-    const a = document.createElement('a');
-    a.href = s.url; a.target = '_blank'; a.rel = 'noreferrer'; a.textContent = s.label;
-    li.appendChild(a);
+    li.textContent = s.label;
     ul.appendChild(li);
   });
 }
