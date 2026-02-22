@@ -1,6 +1,6 @@
 import { SCHEMES, TAX_CONSTANTS } from './rules.js';
 
-const APP_META = { version: 'v1.2', updatedAt: '2026-02-21' };
+const APP_META = { version: 'v1.2d', updatedAt: '2026-02-22' };
 let BRAND_CONFIG = null;
 let CURRENT_BRAND = null;
 let LAST_RESULT = null;

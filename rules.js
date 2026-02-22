@@ -15,8 +15,9 @@ export const SCHEMES = [
     expense_rate: 0.43,
     bands: null,
     sources: [
-      { label: '所得稅法（租賃所得）', url: 'https://law.moj.gov.tw/LawClass/LawAll.aspx?pcode=G0340003' },
-      { label: '財政部稅務入口網（扣繳Q&A）', url: 'https://www.etax.nat.gov.tw/etwmain/tax-info/understanding/tax-q-and-a/national/individual-income-tax/withheld-rule/rule/zNMxNQQ' }
+      { label: '住宅法第15條', url: '' },
+      { label: '住宅法第23條', url: '' },
+      { label: '租賃住宅市場發展及管理條例第17條', url: '' }
     ]
   },
   {
@@ -28,8 +29,9 @@ export const SCHEMES = [
     expense_rate: 0.43,
     bands: null,
     sources: [
-      { label: '住宅法第15條（公益出租人）', url: 'https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0070195&flno=15' },
-      { label: '財政部（公益出租人租稅優惠）', url: 'https://www.mof.gov.tw/house/multiplehtml/41e7424fa26e4d41905ed1800fd9fabc' }
+      { label: '住宅法第15條', url: '' },
+      { label: '住宅法第23條', url: '' },
+      { label: '租賃住宅市場發展及管理條例第17條', url: '' }
     ]
   },
   {
@@ -44,8 +46,9 @@ export const SCHEMES = [
       { portion: '>20000', expense_rate: 0.43 }
     ],
     sources: [
-      { label: '租賃住宅市場發展及管理條例第17條', url: 'https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0060125&flno=17' },
-      { label: '內政部不動產資訊平台（包租代管）', url: 'https://www.land.moi.gov.tw/' }
+      { label: '住宅法第15條', url: '' },
+      { label: '住宅法第23條', url: '' },
+      { label: '租賃住宅市場發展及管理條例第17條', url: '' }
     ]
   },
   {
@@ -57,8 +60,9 @@ export const SCHEMES = [
     expense_rate: 0.60,
     bands: null,
     sources: [
-      { label: '住宅法第23條（社會住宅租稅）', url: 'https://law.moj.gov.tw/LawClass/LawSingle.aspx?pcode=D0070195&flno=23' },
-      { label: '高雄市稅捐稽徵處（房屋/地價稅Q&A）', url: 'https://www.kctax.gov.tw/TaxNews/QAList.aspx?p=2&MenuID=192&typeid=3' }
+      { label: '住宅法第15條', url: '' },
+      { label: '住宅法第23條', url: '' },
+      { label: '租賃住宅市場發展及管理條例第17條', url: '' }
     ]
   }
 ];

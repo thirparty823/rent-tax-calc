@@ -15,8 +15,7 @@
     .printbar{margin:12px 0}
     @media print { .printbar{display:none} }
   </style>
-  <script src="./auth.js"></script>
-</head>
+  </head>
 <body>
   <div class="watermark" id="wm"></div>
   <div class="printbar"><button onclick="window.print()">列印 / 存成 PDF</button></div>
@@ -63,7 +62,7 @@
 
 <script type="module">
   import { SCHEMES, TAX_CONSTANTS } from './rules.js';
-  const APP_META = { version: 'v1.2', updatedAt: '2026-02-21' };
+  const APP_META = { version: 'v1.2d', updatedAt: '2026-02-22' };
   const money = n => new Intl.NumberFormat('zh-TW', {maximumFractionDigits:0}).format(Math.round(n||0));
   const q = s => document.querySelector(s);
   const u = new URL(window.location.href);
