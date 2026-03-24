@@ -78,9 +78,10 @@ export function bindAuthGate(options) {
   };
 
   if (isAuthorized()) {
-    showApp();
-    return true;
-  }
+  gate.style.display = 'none';
+  app.style.display = '';
+  return true;
+}
 
   showGate();
 
