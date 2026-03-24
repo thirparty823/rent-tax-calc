@@ -1,4 +1,5 @@
 import { SCHEMES, TAX_CONSTANTS } from './rules.js';
+import { bindAuthGate } from './auth.js';
 
 const APP_META = { version: 'v1.2d', updatedAt: '2026-02-22' };
 let BRAND_CONFIG = null;
@@ -239,11 +240,31 @@ function initEvents(){
   qs('#marginalRate').addEventListener('change', runCalc);
 }
 
-(async function bootstrap(){
+let APP_STARTED = false;
+
+async function startApp() {
+  if (APP_STARTED) return;
+  APP_STARTED = true;
+
   initSchemeSelect();
   await loadBrandConfig();
   applyPrefill();
   syncSchemeAvailability();
   initEvents();
   runCalc();
+}
+
+(async function bootstrap() {
+  const passed = bindAuthGate({
+    gateSelector: '#authGate',
+    appSelector: '#appShell',
+    inputSelector: '#authPassword',
+    buttonSelector: '#authBtn',
+    messageSelector: '#authMessage',
+    onSuccess: startApp
+  });
+
+  if (passed) {
+    await startApp();
+  }
 })();
