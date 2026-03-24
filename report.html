@@ -17,6 +17,17 @@
   </style>
   </head>
 <body>
+    <div id="authGate" class="card" style="max-width:420px;margin:80px auto;">
+    <h3 style="margin-top:0;">內部使用驗證</h3>
+    <div class="muted" style="margin-bottom:12px;">請輸入本月密碼後查看報告頁。</div>
+    <input id="authPassword" type="password" placeholder="請輸入本月密碼" />
+    <div style="margin-top:10px;">
+      <button id="authBtn" type="button">進入報告</button>
+    </div>
+    <div id="authMessage" class="muted" style="margin-top:10px;"></div>
+  </div>
+
+  <div id="appShell" style="display:none;">
   <div class="watermark" id="wm"></div>
   <div class="printbar"><button onclick="window.print()">列印 / 存成 PDF</button></div>
   <div class="header">
@@ -62,6 +73,9 @@
 
 <script type="module">
   import { SCHEMES, TAX_CONSTANTS } from './rules.js';
+  import { bindAuthGate } from './auth.js';
+  
+  async function startReport() {
   const APP_META = { version: 'v1.2d', updatedAt: '2026-02-22' };
   const money = n => new Intl.NumberFormat('zh-TW', {maximumFractionDigits:0}).format(Math.round(n||0));
   const q = s => document.querySelector(s);
@@ -127,6 +141,20 @@
   });
 
   q('#disc').textContent = brand.footerDisclaimer;
-</script>
+}
+  const passed = bindAuthGate({
+  gateSelector: '#authGate',
+  appSelector: '#appShell',
+  inputSelector: '#authPassword',
+  buttonSelector: '#authBtn',
+  messageSelector: '#authMessage',
+  onSuccess: startReport
+});
+
+if (passed) {
+  await startReport();
+}
+  </script>
+  </div>
 </body>
 </html>
