@@ -32,6 +32,20 @@
   </style>
   </head>
 <body>
+    <div id="authGate" class="card" style="max-width:420px;margin:80px auto;">
+    <h2>內部使用驗證</h2>
+    <div class="muted" style="margin-bottom:12px;">
+      本頁為公司內部使用，請輸入本月密碼。
+    </div>
+    <label for="authPassword">密碼</label>
+    <input id="authPassword" type="password" placeholder="請輸入本月密碼" />
+    <div class="actions">
+      <button id="authBtn" type="button">進入</button>
+    </div>
+    <div id="authMessage" class="muted" style="margin-top:10px;"></div>
+  </div>
+
+  <div id="appShell" style="display:none;">
   <div class="brandbar">
     <div class="brandleft">
       <img id="brandLogo" class="brandlogo" alt="logo" />
@@ -104,7 +118,8 @@
   </div>
 
   <div class="footer"><div id="footerVersion"></div><div id="footerDisclaimer">本工具為試算與法源指引，非稅捐機關核定；實際仍以個案資料、法規與主管機關認定為準。</div></div>
-
-<script type="module" src="./app.js"></script>
+  </div>
+  
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
