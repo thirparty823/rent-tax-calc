@@ -1,79 +1,113 @@
-// Weak protection (client-side password gate)
-// 注意：這不是安全防護，程式碼與密碼仍可被看到；僅作最低門檻限制。
-(() => {
-  const AUTH_KEY = 'rentTaxCalcAuth_v1';
-  const PASSWORD = '0388'; // ← 請改成你自己的密碼（上線前務必修改）
-  const TITLE = '租賃稅務試算器';
-  const SUBTITLE = '請輸入存取密碼（最低保護）';
-
-  function isAuthed() {
-    try { return sessionStorage.getItem(AUTH_KEY) === 'ok'; } catch { return false; }
+const AUTH_CONFIG = {
+  storageKey: 'rent_tax_tool_auth',
+  monthPasswords: {
+    '2026-03': 'test',
+    '2026-04': '',
+    '2026-05': ''
   }
-  function setAuthed() {
-    try { sessionStorage.setItem(AUTH_KEY, 'ok'); } catch {}
-  }
+};
 
-  function buildGate() {
-    const style = document.createElement('style');
-    style.textContent = `
-      .auth-mask{position:fixed;inset:0;background:rgba(255,255,255,.96);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px}
-      .auth-card{width:min(420px,95vw);border:1px solid #ddd;border-radius:12px;background:#fff;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
-      .auth-card h1{margin:0 0 6px;font-size:20px}
-      .auth-card p{margin:0 0 12px;color:#666;font-size:13px}
-      .auth-row{display:flex;gap:8px}
-      .auth-row input{flex:1;padding:10px 12px;border:1px solid #ccc;border-radius:8px;font-size:16px}
-      .auth-row button{padding:10px 14px;border:1px solid #111;background:#111;color:#fff;border-radius:8px;cursor:pointer}
-      .auth-err{margin-top:8px;color:#b00020;font-size:13px;min-height:18px}
-      .auth-note{margin-top:10px;color:#777;font-size:12px}
-    `;
-    document.head.appendChild(style);
+function getCurrentMonthKey() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
 
-    const mask = document.createElement('div');
-    mask.className = 'auth-mask';
-    mask.innerHTML = `
-      <div class="auth-card">
-        <h1>${TITLE}</h1>
-        <p>${SUBTITLE}</p>
-        <div class="auth-row">
-          <input id="authPwdInput" type="password" placeholder="輸入密碼" />
-          <button id="authPwdBtn" type="button">進入</button>
-        </div>
-        <div class="auth-err" id="authPwdErr"></div>
-        <div class="auth-note">此為弱保護：可限制一般使用者直接開啟，但無法防止懂技術者查看程式碼。</div>
-      </div>`;
-    document.body.appendChild(mask);
+function getExpectedPassword() {
+  const key = getCurrentMonthKey();
+  return AUTH_CONFIG.monthPasswords[key] || null;
+}
 
-    const input = mask.querySelector('#authPwdInput');
-    const btn = mask.querySelector('#authPwdBtn');
-    const err = mask.querySelector('#authPwdErr');
+export function isAuthorized() {
+  const saved = sessionStorage.getItem(AUTH_CONFIG.storageKey);
+  return saved === getCurrentMonthKey();
+}
 
-    const submit = () => {
-      const val = (input.value || '').trim();
-      if (!PASSWORD) {
-        err.textContent = '尚未設定密碼（請在 auth.js 設定 PASSWORD）';
-        return;
-      }
-      if (val === PASSWORD) {
-        setAuthed();
-        mask.remove();
-      } else {
-        err.textContent = '密碼錯誤';
-        input.select();
-      }
-    };
-    btn.addEventListener('click', submit);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
-    setTimeout(() => input.focus(), 0);
+export function clearAuth() {
+  sessionStorage.removeItem(AUTH_CONFIG.storageKey);
+}
+
+export function verifyPassword(inputPassword) {
+  const expected = getExpectedPassword();
+  if (!expected) return false;
+  if (inputPassword !== expected) return false;
+
+  sessionStorage.setItem(AUTH_CONFIG.storageKey, getCurrentMonthKey());
+  return true;
+}
+
+export function getAuthInfo() {
+  return {
+    currentMonth: getCurrentMonthKey(),
+    hasPasswordConfigured: !!getExpectedPassword()
+  };
+}
+
+export function bindAuthGate(options) {
+  const {
+    gateSelector = '#authGate',
+    appSelector = '#appShell',
+    inputSelector = '#authPassword',
+    buttonSelector = '#authBtn',
+    messageSelector = '#authMessage',
+    onSuccess = null
+  } = options || {};
+
+  const gate = document.querySelector(gateSelector);
+  const app = document.querySelector(appSelector);
+  const input = document.querySelector(inputSelector);
+  const button = document.querySelector(buttonSelector);
+  const message = document.querySelector(messageSelector);
+
+  if (!gate || !app) {
+    throw new Error('找不到 authGate 或 appShell 容器');
   }
 
-  function init() {
-    if (isAuthed()) return;
-    buildGate();
+  const showApp = async () => {
+    gate.style.display = 'none';
+    app.style.display = '';
+    if (typeof onSuccess === 'function') {
+      await onSuccess();
+    }
+  };
+
+  const showGate = () => {
+    gate.style.display = '';
+    app.style.display = 'none';
+  };
+
+  if (isAuthorized()) {
+    showApp();
+    return true;
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  showGate();
+
+  const info = getAuthInfo();
+  if (!info.hasPasswordConfigured && message) {
+    message.textContent = `尚未設定 ${info.currentMonth} 的密碼`;
   }
-})();
+
+  const handleSubmit = async () => {
+    const pwd = input?.value || '';
+    const ok = verifyPassword(pwd);
+
+    if (ok) {
+      if (message) message.textContent = '驗證成功';
+      await showApp();
+      return;
+    }
+
+    if (message) message.textContent = '密碼錯誤，或本月尚未設定密碼';
+    if (input) input.value = '';
+    input?.focus();
+  };
+
+  button?.addEventListener('click', handleSubmit);
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') handleSubmit();
+  });
+
+  return false;
+}
