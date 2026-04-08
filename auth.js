@@ -2,7 +2,7 @@ const AUTH_CONFIG = {
   storageKey: 'rent_tax_tool_auth',
   monthPasswords: {
     '2026-03': 'test',
-    '2026-04': '',
+    '2026-04': 'test',
     '2026-05': ''
   }
 };
