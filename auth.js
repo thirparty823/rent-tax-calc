@@ -3,7 +3,7 @@ const AUTH_CONFIG = {
   monthPasswords: {
     '2026-03': 'test',
     '2026-04': 'test',
-    '2026-05': ''
+    '2026-05': 'test'
   }
 };
 
